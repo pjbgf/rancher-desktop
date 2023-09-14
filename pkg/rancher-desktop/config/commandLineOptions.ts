@@ -73,6 +73,7 @@ export function updateFromCommandLine(cfg: Settings, lockedFields: LockedSetting
     if (currentValue === undefined) {
       // Ignore unrecognized command-line options until we get to one we recognize
       if (processingExternalArguments) {
+        console.warn(`Unrecognized command-line argument ${ arg }`);
         continue;
       }
       throw new Error(`Can't evaluate command-line argument ${ arg } -- no such entry in current settings at ${ join(paths.config, 'settings.json') }`);

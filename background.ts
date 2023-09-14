@@ -226,7 +226,7 @@ Electron.app.whenReady().then(async() => {
         cfg = updateFromCommandLine(cfg, settingsImpl.getLockedSettings(), commandLineArgs);
         k8smanager.noModalDialogs = noModalDialogs = TransientSettings.value.noModalDialogs;
       }
-    } catch (err) {
+    } catch (err: any) {
       noModalDialogs = TransientSettings.value.noModalDialogs;
       if (err instanceof LockedFieldError || err instanceof DeploymentProfileError) {
         // This will end up calling `showErrorDialog(<title>, <message>, fatal=true)`
@@ -239,6 +239,8 @@ Electron.app.whenReady().then(async() => {
           console.log('Internal error trying to show a failure dialog: ', err2);
           process.exit(2);
         });
+      } else if (!noModalDialogs) {
+        showErrorDialog('Invalid command-line arguments', err.message, false);
       }
       console.log(`Failed to update command from argument ${ commandLineArgs.join(', ') }`, err);
     }

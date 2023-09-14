@@ -64,14 +64,7 @@ func doStartOrSetCommand(cmd *cobra.Command) error {
 		// There's no system-wide mutex that will let us guarantee that if rancher desktop is running when
 		// we test it (easiest to just try to get the settings), that it will still be running when we
 		// try to upload the settings (if any were specified).
-		if applicationPath != "" {
-			// `--path | -p` is not a valid option for `rdctl set...`
-			return fmt.Errorf("--path %q specified but Rancher Desktop is already running", applicationPath)
-		}
-		err = doSetCommand(cmd)
-		if err == nil || cmd.Name() == "set" {
-			return err
-		}
+		return doSetCommand(cmd)
 	}
 	// If `set...` failed, try running the original `start` command, if only to give
 	// an error message from the point of view of `start` rather than `set`.
