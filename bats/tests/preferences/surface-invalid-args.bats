@@ -1,0 +1,69 @@
+load '../helpers/load'
+
+local_setup() {
+    if is_windows; then
+        skip "test not applicable on Windows"
+    fi
+}
+
+@test 'initial factory reset' {
+    factory_reset
+}
+
+can_set_vm_to_vz() {
+    if ! is_macos; then
+        false
+    else
+        version=$(/usr/bin/sw_vers -productVersion)
+        majorMinorVersion="${version%.*}"
+        majorVersion="${majorMinorVersion%.*}"
+        minorVersion="${majorMinorVersion#*.}"
+        if ((majorVersion >= 14)); then
+            true
+        elif ((majorVersion <= 12)); then
+            false
+        elif ((minorVersion >= 3)); then
+            true
+        else
+            case "$(uname -m)" in
+            x86_64) true ;;
+            *) false ;;
+            esac
+        fi
+    fi
+}
+
+verify_invalid_vmtype_message() {
+    local message="$1"
+    local basefile="$2"
+    try --max 36 --delay 5 assert_file_contains "$PATH_LOGS/$basefile" "$message"
+}
+
+@test 'mac-specific failure for unacceptable start setting' {
+    if ! is_macos; then
+        skip 'need a mac for the --experimental.virtual-machine.type setting'
+    elif can_set_vm_to_vz; then
+        skip 'no error setting experimental.virtualMachine.type to "vz" on this platform'
+    fi
+    # Don't use launch_the_application so we can check non-dev-mode error messages
+    if using_dev_mode; then
+        yarn dev --experimental.virtualMachine.type vz --no-modal-dialogs &
+        try --max 36 --delay 5 assert_file_contains \
+            "$PATH_LOGS/background.log" \
+            'Setting experimental.virtualMachine.type to "vz" on Intel requires macOS 13.0 (Ventura) or later.'
+        rdctl shutdown
+    else
+        run rdctl start --experimental.virtual-machine.type vz
+        assert_failure
+        assert_output --partial $"Error: invalid value for option --experimental.virtual-machine.type: \"vz\"; must be 'qemu'"
+    fi
+}
+
+@test 'report unrecognized options in the log file' {
+    if ! using_dev_mode; then
+        skip 'hard to get unrecognized options past rdctl-start; run this test in dev-mode'
+    fi
+    yarn dev --his-face-rings-a-bell --no-modal-dialogs &
+    try --max 36 --delay 5 assert_file_contains "$PATH_LOGS/settings.log" "Unrecognized command-line argument --his-face-rings-a-bell"
+    rdctl shutdown
+}

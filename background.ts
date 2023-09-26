@@ -171,6 +171,10 @@ Electron.app.whenReady().then(async() => {
   try {
     const commandLineArgs = getCommandLineArgs();
 
+    // Reset `noModalDialogs` on non-error paths, but if an error occurs during command processing,
+    // we'll need to know whether this was set in advance. It's very unlikely that a string option is set
+    // to this exact string though.
+    noModalDialogs = commandLineArgs.includes('--no-modal-dialogs');
     setupProtocolHandlers();
 
     // make sure we have the macOS version cached before calling getMacOsVersion()
@@ -194,12 +198,6 @@ Electron.app.whenReady().then(async() => {
       deploymentProfiles = await readDeploymentProfiles();
     } catch (ex: any) {
       if (ex instanceof DeploymentProfileError) {
-        // Need to do a heuristic to see if we have `--no-modal-dialogs` on the command-line.
-        // Normally we don't process the command-line arguments before we know what our locked fields are,
-        // but we need to see if we don't want to deal with dialog boxes.
-        if (commandLineArgs.includes('--no-modal-dialogs')) {
-          noModalDialogs = true;
-        }
         await handleFailure(ex);
       } else {
         console.log(`Got an unexpected deployment profile error ${ ex }`, ex);
@@ -322,7 +320,7 @@ Electron.app.whenReady().then(async() => {
 });
 
 async function doFirstRunDialog() {
-  if (settingsImpl.firstRunDialogNeeded()) {
+  if (!noModalDialogs && settingsImpl.firstRunDialogNeeded()) {
     await window.openFirstRunDialog();
   }
   firstRunDialogComplete = true;
