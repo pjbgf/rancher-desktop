@@ -33,12 +33,6 @@ can_set_vm_to_vz() {
     fi
 }
 
-verify_invalid_vmtype_message() {
-    local message="$1"
-    local basefile="$2"
-    try --max 36 --delay 5 assert_file_contains "$PATH_LOGS/$basefile" "$message"
-}
-
 @test 'mac-specific failure for unacceptable start setting' {
     if ! is_macos; then
         skip 'need a mac for the --experimental.virtual-machine.type setting'
