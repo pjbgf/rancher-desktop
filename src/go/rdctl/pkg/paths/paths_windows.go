@@ -26,19 +26,15 @@ func GetPaths(getResourcesPathFuncs ...func() (string, error)) (Paths, error) {
 	if localAppData == "" {
 		localAppData = filepath.Join(homeDir, "AppData", "Local")
 	}
-	appData := os.Getenv("APPDATA")
-	if appData == "" {
-		appData = filepath.Join(homeDir, "AppData", "Roaming")
-	}
-	appHome := filepath.Join(appData, appName)
+	appHome := filepath.Join(localAppData, appName)
 	paths := Paths{
 		AppHome:       appHome,
 		AltAppHome:    appHome,
 		Config:        appHome,
-		Cache:         filepath.Join(localAppData, appName, "cache"),
-		WslDistro:     filepath.Join(localAppData, appName, "distro"),
-		WslDistroData: filepath.Join(localAppData, appName, "distro-data"),
-		ExtensionRoot: filepath.Join(localAppData, appName, "extensions"),
+		Cache:         filepath.Join(appHome, "cache"),
+		WslDistro:     filepath.Join(appHome, "distro"),
+		WslDistroData: filepath.Join(appHome, "distro-data"),
+		ExtensionRoot: filepath.Join(appHome, "extensions"),
 	}
 	paths.Logs = os.Getenv("RD_LOGS_DIR")
 	if paths.Logs == "" {
