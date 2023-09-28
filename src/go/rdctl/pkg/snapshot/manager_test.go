@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -70,6 +71,10 @@ func populateFiles(t *testing.T, includeOverrideYaml bool) (p.Paths, map[string]
 }
 
 func TestManager(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Snapshots aren't available on Windows (yet).")
+		return
+	}
 	for _, includeOverrideYaml := range []bool{true, false} {
 		t.Run(fmt.Sprintf("Create with includeOverrideYaml %t", includeOverrideYaml), func(t *testing.T) {
 			paths, _ := populateFiles(t, includeOverrideYaml)
