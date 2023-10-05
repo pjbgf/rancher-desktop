@@ -24,7 +24,7 @@ describe('paths', () => {
   const cases: Record<keyof Paths, expectedData> = {
     appHome: {
       win32:  '%LOCALAPPDATA%/rancher-desktop/',
-      linux:  '%HOME%/.config/rancher-desktop/',
+      linux:  '%HOME%/.local/share/rancher-desktop/',
       darwin: '%HOME%/Library/Application Support/rancher-desktop/',
     },
     altAppHome: {
