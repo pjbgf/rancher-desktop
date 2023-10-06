@@ -42,15 +42,13 @@ can_set_vm_to_vz() {
     # Don't use launch_the_application so we can check non-dev-mode error messages
     if using_dev_mode; then
         yarn dev --experimental.virtualMachine.type vz --no-modal-dialogs &
-        try --max 36 --delay 5 assert_file_contains \
-            "$PATH_LOGS/background.log" \
-            'Setting experimental.virtualMachine.type to "vz" on Intel requires macOS 13.0 (Ventura) or later.'
-        rdctl shutdown
     else
-        run rdctl start --experimental.virtual-machine.type vz
-        assert_failure
-        assert_output --partial $"Error: invalid value for option --experimental.virtual-machine.type: \"vz\"; must be 'qemu'"
+        rdctl start --experimental.virtual-machine.type vz --no-modal-dialogs
     fi
+    try --max 36 --delay 5 assert_file_contains \
+        "$PATH_LOGS/background.log" \
+        'Setting experimental.virtualMachine.type to "vz" on Intel requires macOS 13.0 (Ventura) or later.'
+    rdctl shutdown
 }
 
 @test 'report unrecognized options in the log file' {
