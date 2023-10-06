@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	p "github.com/rancher-sandbox/rancher-desktop/src/go/rdctl/pkg/paths"
+	"github.com/rancher-sandbox/rancher-desktop/src/go/rdctl/pkg/paths"
 )
 
 type TestFile struct {
@@ -19,42 +19,42 @@ type TestFile struct {
 	Contents string
 }
 
-func populateFiles(t *testing.T, includeOverrideYaml bool) (p.Paths, map[string]TestFile) {
+func populateFiles(t *testing.T, includeOverrideYaml bool) (paths.Paths, map[string]TestFile) {
 	baseDir := t.TempDir()
-	paths := p.Paths{
+	appPaths := paths.Paths{
 		Config:    filepath.Join(baseDir, "config"),
 		Lima:      filepath.Join(baseDir, "lima"),
 		Snapshots: filepath.Join(baseDir, "snapshots"),
 	}
 	testFiles := map[string]TestFile{
 		"settings.json": {
-			Path:     filepath.Join(paths.Config, "settings.json"),
+			Path:     filepath.Join(appPaths.Config, "settings.json"),
 			Contents: `{"test": "settings.json"}`,
 		},
 		"basedisk": {
-			Path:     filepath.Join(paths.Lima, "0", "basedisk"),
+			Path:     filepath.Join(appPaths.Lima, "0", "basedisk"),
 			Contents: "basedisk contents",
 		},
 		"diffdisk": {
-			Path:     filepath.Join(paths.Lima, "0", "diffdisk"),
+			Path:     filepath.Join(appPaths.Lima, "0", "diffdisk"),
 			Contents: "diffdisk contents",
 		},
 		"user": {
-			Path:     filepath.Join(paths.Lima, "_config", "user"),
+			Path:     filepath.Join(appPaths.Lima, "_config", "user"),
 			Contents: "user SSH key",
 		},
 		"user.pub": {
-			Path:     filepath.Join(paths.Lima, "_config", "user.pub"),
+			Path:     filepath.Join(appPaths.Lima, "_config", "user.pub"),
 			Contents: "user public SSH key",
 		},
 		"lima.yaml": {
-			Path:     filepath.Join(paths.Lima, "0", "lima.yaml"),
+			Path:     filepath.Join(appPaths.Lima, "0", "lima.yaml"),
 			Contents: "this is yaml",
 		},
 	}
 	if includeOverrideYaml {
 		testFiles["override.yaml"] = TestFile{
-			Path:     filepath.Join(paths.Lima, "_config", "override.yaml"),
+			Path:     filepath.Join(appPaths.Lima, "_config", "override.yaml"),
 			Contents: "test: override.yaml",
 		}
 	}
@@ -67,7 +67,7 @@ func populateFiles(t *testing.T, includeOverrideYaml bool) (p.Paths, map[string]
 			t.Fatalf("failed to create test file %q: %s", file.Path, err)
 		}
 	}
-	return paths, testFiles
+	return appPaths, testFiles
 }
 
 func TestManager(t *testing.T) {
