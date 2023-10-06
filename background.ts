@@ -15,7 +15,7 @@ import { getImageProcessor } from '@pkg/backend/images/imageFactory';
 import { ImageProcessor } from '@pkg/backend/images/imageProcessor';
 import * as K8s from '@pkg/backend/k8s';
 import { Steve } from '@pkg/backend/steve';
-import { LockedFieldError, updateFromCommandLine } from '@pkg/config/commandLineOptions';
+import { FatalCommandLineOptionError, LockedFieldError, updateFromCommandLine } from '@pkg/config/commandLineOptions';
 import { Help } from '@pkg/config/help';
 import * as settings from '@pkg/config/settings';
 import * as settingsImpl from '@pkg/config/settingsImpl';
@@ -226,7 +226,7 @@ Electron.app.whenReady().then(async() => {
       }
     } catch (err: any) {
       noModalDialogs = TransientSettings.value.noModalDialogs;
-      if (err instanceof LockedFieldError || err instanceof DeploymentProfileError) {
+      if (err instanceof LockedFieldError || err instanceof DeploymentProfileError || err instanceof FatalCommandLineOptionError) {
         // This will end up calling `showErrorDialog(<title>, <message>, fatal=true)`
         // and the `fatal` part means we're expecting the app to shutdown.
         // Errors related to either deployment profiles or
@@ -852,6 +852,10 @@ async function handleFailure(payload: any) {
     showErrorDialog('Failed to load the deployment profile', payload.message, true);
 
     return;
+  } else if (payload instanceof FatalCommandLineOptionError) {
+    showErrorDialog('Error in command-line options', payload.message, true);
+
+    return;
   } else if (payload instanceof Error) {
     secondaryMessage = payload.toString();
   } else if (typeof payload === 'number') {
@@ -972,6 +976,9 @@ function validateEarlySettings(cfg: settings.Settings, newSettings: RecursivePar
 
   if (errors.length > 0) {
     throw new LockedFieldError(`Error in deployment profiles:\n${ errors.join('\n') }`);
+  }
+  if (errors.length > 0) {
+    throw new FatalCommandLineOptionError(`Error in command-line options:\n${ errors.join('\n') }`);
   }
 }
 

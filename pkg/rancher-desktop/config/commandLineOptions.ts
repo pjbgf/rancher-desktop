@@ -14,6 +14,8 @@ const console = Logging.settings;
 
 export class LockedFieldError extends Error {}
 
+export class FatalCommandLineOptionError extends Error {}
+
 /**
  * Takes an array of strings, presumably from a command-line used to launch the app.
  * Key operations:
@@ -139,6 +141,9 @@ export function updateFromCommandLine(cfg: Settings, lockedFields: LockedSetting
 
     if (errors.some(error => /field ".+?" is locked/.test(error))) {
       throw new LockedFieldError(errorString);
+    }
+    if (settingsValidator.isFatal) {
+      throw new FatalCommandLineOptionError(errorString);
     }
     throw new Error(errorString);
   }
