@@ -158,7 +158,7 @@ check_directories() {
     # Check if all expected directories are created after starting application/ are deleted after a factory reset
     delete_dir=("$PATH_CONFIG_FILE" "$PATH_LOGS" "$PATH_APP_HOME/credential-server.json" "$PATH_APP_HOME/rd-engine.json")
     if is_unix; then
-        delete_dir+=("$HOME/.rd" "$LIMA_HOME")
+        delete_dir+=("$HOME/.rd" "$LIMA_HOME" "$PATH_CONFIG")
         # We can't make any general assertion on AppHome/snapshots - we don't know if it was created or not
         # So just assert on the other members of AppHome
         # TODO on macOS (not implemented by `rdctl factory-reset`)
