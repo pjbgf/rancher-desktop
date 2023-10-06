@@ -25,7 +25,6 @@ package options
 import (
 	"fmt"
 	"os"
-  "os/exec"
 	"regexp"
 	"runtime"
 	"strings"
@@ -62,57 +61,11 @@ type serverSettings struct {
 
 var specifiedSettings serverSettings
 
-// Platform-specific exceptions need to get hardwired here
-// (for now, possibly forever, because there aren't many and it's not worth working
-// out a scheme for describing them in the command schema).
-// If there's an error anywhere just return the current allowedValues
-func adjustVersionSpecificEnums(option string, allowedValues []string) []string {
-	if runtime.GOOS != "darwin" || option != "--experimental.virtual-machine.type" {
-		return allowedValues
-	}
-	macOSVersion, err := exec.Command("/usr/bin/sw_vers", "-productVersion").CombinedOutput()
-	if err != nil {
-		return allowedValues
-	}
-	versionParts := strings.Split(string(macOSVersion), ".")
-	majorVersion, majorErr := strconv.Atoi(versionParts[0])
-	if majorErr != nil {
-		return allowedValues
-	}
-	if majorVersion >= 14 {
-		return allowedValues
-	}
-	removeVZ := false
-	if majorVersion <= 12 {
-		removeVZ = true
-	} else {
-		// majorVersion is 13, Need 13.3.0+ for arm64, 13.0.0+ for amd64
-		minorVersion, minorErr := strconv.Atoi(versionParts[1])
-		if minorErr != nil || minorVersion >= 3 {
-			return allowedValues
-		}
-		if runtime.GOARCH == "arm64" && minorVersion < 3 {
-			removeVZ = true
-		}
-	}
-	if !removeVZ {
-		return allowedValues
-	}
-	newValues := make([]string, 0, len(allowedValues))
-	for _, val := range allowedValues {
-		if val != "vz" {
-			newValues = append(newValues, val)
-		}
-	}
-	return newValues
-}
-
 /**
  * When an enum array is given with an option,
  * check that a specified value for that option is in its `allowedValues` list.
  */
 func enumStringCheck(option string, specified string, allowedValues []string) error {
-	allowedValues = adjustVersionSpecificEnums(option, allowedValues)
 	numVals := len(allowedValues)
 	singleQuotedAllowedValues := make([]string, numVals)
 	for i, val := range allowedValues {
