@@ -1,9 +1,7 @@
 load '../helpers/load'
 
 local_setup() {
-    if ! is_windows; then
-        skip 'appdata => localData migration is windows-only'
-    fi
+    skip_on_unix 'appdata => localData migration is windows-only'
 }
 
 @test 'factory reset' {
@@ -15,9 +13,9 @@ local_setup() {
     wait_for_container_engine
     rdctl api -X PUT --body '{ "version": '"$(get_setting .version)"', "WSL": {"integrations": { "beaker" : true }}}'
     rdctl shutdown
-    roamingHome="$(win32env APPDATA)/rancher-desktop"
-    mkdir -p "$roamingHome"
-    mv "$PATH_CONFIG/settings.json" "$roamingHome/settings.json"
+    roaming_home="$(win32env APPDATA)/rancher-desktop"
+    mkdir -p "$roaming_home"
+    mv "$PATH_CONFIG_FILE" "$roaming_home/settings.json"
 }
 
 @test 'restart app, verify settings has been migrated' {
